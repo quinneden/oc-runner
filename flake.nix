@@ -38,8 +38,8 @@
         modules = [
           ./configuration.nix
           disko.nixosModules.disko
-          # nixos-facter-modules.nixosModules.facter
-          # { config.facter.reportPath = ./facter.json; }
+          nixos-facter-modules.nixosModules.facter
+          { config.facter.reportPath = ./facter.json; }
         ];
       };
     };
