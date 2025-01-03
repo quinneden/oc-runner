@@ -2,30 +2,32 @@
   modulesPath,
   lib,
   pkgs,
+  secrets,
   ...
 }:
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
-    (modulesPath + "/pqerofiles/qemu-guest.nix")
+    (modulesPath + "/profiles/qemu-guest.nix")
     ./disk-config.nix
   ];
+
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.loader.grub = {
     efiSupport = true;
     efiInstallAsRemovable = true;
   };
 
-  users.users.${username} = {
+  users.users.quinn = {
     isNormalUser = true;
-    # initialPassword = "";
-    shell = pkgs.zsh;
+    initialPassword = "${secrets.misc.passwords.quinn}";
     extraGroups = [ "wheel" ];
   };
 
   services.openssh = {
     enable = true;
-    settings.PermitRootLogin = "prohibit-password";
+    settings.PermitRootLogin = "yes";
   };
 
   environment.systemPackages = map lib.lowPrio [
