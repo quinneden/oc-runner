@@ -1,11 +1,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-
-    github-nix-ci = {
-      url = "github:juspay/github-nix-ci";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    github-nix-ci.url = "github:juspay/github-nix-ci";
 
     disko = {
       url = "github:nix-community/disko";
@@ -15,16 +11,16 @@
 
   outputs =
     {
-      nixpkgs,
       disko,
       github-nix-ci,
+      nixpkgs,
       ...
-    }:
+    }@inputs:
     let
-      # forEachSystem = nixpkgs.lib.genAttrs [
-      #   "aarch64-darwin"
-      #   "aarch64-linux"
-      # ];
+      forEachSystem = nixpkgs.lib.genAttrs [
+        "aarch64-darwin"
+        "aarch64-linux"
+      ];
 
       secrets =
         let
@@ -45,7 +41,7 @@
         pkgs = import nixpkgs { inherit system; };
 
         specialArgs = {
-          inherit secrets;
+          inherit inputs secrets;
         };
 
         modules = [
@@ -55,31 +51,31 @@
         ];
       };
 
-      #   apps = forEachSystem (
-      #     system:
-      #     let
-      #       pkgs = import nixpkgs { inherit system; };
-      #       inherit (pkgs) lib writeShellApplication;
+      apps = forEachSystem (
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          inherit (pkgs) writeShellApplication lib;
 
-      #       deploySystem = writeShellApplication {
-      #         name = "deploy";
-      #         runtimeInputs = [ pkgsCross.nixos-rebuild ];
-      #         text = ''
-      #           nixos-rebuild switch --show-trace \
-      #             --target-host "root@oc-runner" \
-      #             --build-host "localhost" \
-      #             --flake .#oc-runner
-      #         '';
-      #       };
-      #     in
-      #     rec {
-      #       default = deploy;
+          deployScript = writeShellApplication {
+            name = "deploy";
+            runtimeInputs = [ pkgs.nixos-rebuild ];
+            text = ''
+              nixos-rebuild switch --show-trace --fast \
+                --target-host "root@oc-runner" \
+                --build-host "localhost" \
+                --flake .#oc-runner
+            '';
+          };
+        in
+        rec {
+          default = deploy;
 
-      #       deploy = {
-      #         type = "app";
-      #         program = lib.getExe deploySystem;
-      #       };
-      #     }
-      #   );
+          deploy = {
+            type = "app";
+            program = lib.getExe deployScript;
+          };
+        }
+      );
     };
 }
