@@ -2,7 +2,10 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
-    nixos-facter-modules.url = "github:numtide/nixos-facter-modules";
+    github-nix-ci = {
+      url = "github:juspay/github-nix-ci";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     disko = {
       url = "github:nix-community/disko";
@@ -14,10 +17,15 @@
     {
       nixpkgs,
       disko,
-      nixos-facter-modules,
+      github-nix-ci,
       ...
     }:
     let
+      # forEachSystem = nixpkgs.lib.genAttrs [
+      #   "aarch64-darwin"
+      #   "aarch64-linux"
+      # ];
+
       secrets =
         let
           inherit (builtins) fromJSON readFile;
@@ -31,16 +39,47 @@
         ] (secretFile: fromJSON (readFile .secrets/${secretFile}.json));
     in
     {
-      # nixos-anywhere --flake .#generic-nixos-facter --generate-hardware-config nixos-facter facter.json <hostname>
-      nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem rec {
         system = "aarch64-linux";
-        specialArgs = { inherit secrets; };
+
+        pkgs = import nixpkgs { inherit system; };
+
+        specialArgs = {
+          inherit secrets;
+        };
+
         modules = [
           ./configuration.nix
-          disko.nixosModules.disko
-          nixos-facter-modules.nixosModules.facter
-          { config.facter.reportPath = ./facter.json; }
+          disko.nixosModules.default
+          github-nix-ci.nixosModules.default
         ];
       };
+
+      #   apps = forEachSystem (
+      #     system:
+      #     let
+      #       pkgs = import nixpkgs { inherit system; };
+      #       inherit (pkgs) lib writeShellApplication;
+
+      #       deploySystem = writeShellApplication {
+      #         name = "deploy";
+      #         runtimeInputs = [ pkgsCross.nixos-rebuild ];
+      #         text = ''
+      #           nixos-rebuild switch --show-trace \
+      #             --target-host "root@oc-runner" \
+      #             --build-host "localhost" \
+      #             --flake .#oc-runner
+      #         '';
+      #       };
+      #     in
+      #     rec {
+      #       default = deploy;
+
+      #       deploy = {
+      #         type = "app";
+      #         program = lib.getExe deploySystem;
+      #       };
+      #     }
+      #   );
     };
 }

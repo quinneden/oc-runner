@@ -9,18 +9,22 @@
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
+    ./hardware-configuration.nix
     ./disk-config.nix
+    ./modules/zsh.nix
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
 
   boot.loader.grub = {
     efiSupport = true;
     efiInstallAsRemovable = true;
+    devices = [ "/dev/sda" ];
   };
 
   users.users.quinn = {
     isNormalUser = true;
+    shell = pkgs.zsh;
     initialPassword = "${secrets.misc.passwords.quinn}";
     extraGroups = [ "wheel" ];
   };
