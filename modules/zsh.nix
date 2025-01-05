@@ -1,15 +1,5 @@
-{
-  pkgs,
-  config,
-  ...
-}:
 let
   shellAliases = {
-    bs = "stat -c%s";
-    cddf = "cd $dotdir";
-    cddl = "cd ~/Downloads";
-    code = "codium";
-    db = "distrobox";
     gst = "git status";
     gsur = "git submodule update --init --recursive";
     l = "eza -la --group-directories-first";
@@ -18,7 +8,6 @@ let
     push = "git push";
     tree = "eza -ATL3 --git-ignore";
   };
-
 in
 {
   imports = [ ./pure-prompt.nix ];
@@ -30,35 +19,27 @@ in
     enableCompletion = true;
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
-    histFile = "${config.xdg.configHome}/zsh/.zsh_history";
+    histFile = "$HOME/.config/zsh/.zsh_history";
 
     ohMyZsh = {
       enable = true;
       plugins = [
-        "fzf"
         "eza"
         "zoxide"
-        "direnv"
       ];
-      custom = "${config.xdg.configHome}/zsh";
+      custom = "$HOME/.config/zsh";
     };
 
     shellInit = ''
-      fpath+=("${config.xdg.configHome}/zsh/completions")
       if type zoxide &>/dev/null; then eval "$(zoxide init zsh)"; fi
       if type z &>/dev/null; then alias cd='z'; fi
-      for f ($HOME/.config/zsh/functions/*(N.)); do source $f; done
+      [[ -f $HOME/.hushlogin ]] || touch "$HOME"/.hushlogin
     '';
   };
 
   environment.sessionVariables = {
-    compdir = "$HOME/.config/zsh/completions";
-    dotdir = "$HOME/.dotfiles";
-    EDITOR = "mi";
-    LANG = "en_US.UTF-8";
-    LC_ALL = "en_US.UTF-8";
-    MICRO_TRUECOLOR = "1";
-    NIXOS_CONFIG = "$HOME/.dotfiles";
+    EDITOR = "micro";
+    ZDOTDIR = "$HOME/.config/zsh";
   };
 
   programs.bash = {
