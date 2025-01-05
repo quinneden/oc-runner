@@ -18,5 +18,6 @@ in
   "cloudflare-secret-access-key.age".publicKeys = [ oc-runner ];
   "cloudflare-access-key-id.age".publicKeys = [ oc-runner ];
   "github-token.age".publicKeys = [ oc-runner ];
-  "gha-pat.age".publicKeys = [ oc-runner ];
+  "github-nix-ci/quinneden.token.age".publicKeys = [ oc-runner ];
+  # "gha-pat.age".publicKeys = [ oc-runner ];
 }

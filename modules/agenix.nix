@@ -7,5 +7,5 @@
   age.secrets.cloudflare-secret-access-key.file = ../secrets/cloudflare-secret-access-key.age;
   age.secrets.cloudflare-access-key-id.file = ../secrets/cloudflare-access-key-id.age;
   age.secrets.github-token.file = ../secrets/github-token.age;
-  age.secrets.gha-pat.file = ../secrets/gha-pat.age;
+  # age.secrets.gha-pat.file = ../secrets/gha-pat.age;
 }

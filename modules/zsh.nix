@@ -43,10 +43,14 @@ in
   };
 
   programs.bash = {
-    enableCompletion = true;
+    completion.enable = true;
     shellAliases = shellAliases;
     promptInit = ''
-      PS1="\[\e[32m\]\u@\h\[\e[0m\]:\[\e[34m\]\w\[\e[0m\] \$ "
+      if [[ $EUID -eq 0 ]]; then
+        PS1="\[\e[31m\]\u@\h\[\e[0m\]:\[\e[34m\]\w\[\e[0m\] \$ "
+      else
+        PS1="\[\e[32m\]\u@\h\[\e[0m\]:\[\e[34m\]\w\[\e[0m\] \$ "
+      fi
       export PS1
     '';
   };

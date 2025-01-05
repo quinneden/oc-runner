@@ -11,6 +11,7 @@
     ./hardware-configuration.nix
     ./modules/agenix.nix
     ./modules/disk-config.nix
+    ./modules/gha-runners.nix
     ./modules/zsh.nix
   ];
 
@@ -22,10 +23,31 @@
     timeout = 0;
   };
 
+  nix = {
+    nixPath = [ "nixpkgs=flake:nixpkgs" ];
+    settings = {
+      access-tokens = [ "github=@${config.age.secrets.github-token.path}" ];
+      accept-flake-config = true;
+      auto-optimise-store = true;
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
+      extra-substituters = [
+        "https://nix-community.cachix.org"
+      ];
+      extra-trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+      trusted-users = [ "quinn" ];
+      warn-dirty = false;
+    };
+  };
+
   users.users.quinn = {
     isNormalUser = true;
     shell = pkgs.zsh;
-    passwordFile = config.age.secrets.quinn-passwd.path;
+    hashedPasswordFile = config.age.secrets.quinn-passwd.path;
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII" # quinn@macmini-m4
@@ -42,10 +64,13 @@
   networking.hostName = "oc-runner";
 
   environment.systemPackages = with pkgs; [
+    cachix
     curl
     eza
     fzf
-    gitMinimal
+    gh
+    git
+    git-crypt
     micro
     zoxide
   ];
@@ -54,7 +79,7 @@
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII" # quinn@macmini-m4
     ];
-    passwordFile = config.age.secrets.root-passwd.path;
+    hashedPasswordFile = config.age.secrets.root-passwd.path;
   };
 
   system.stateVersion = "24.05";

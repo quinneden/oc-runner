@@ -23,33 +23,16 @@
       ...
     }:
     let
-      # secrets =
-      #   let
-      #     inherit (builtins) fromJSON readFile;
-      #   in
-      #   with nixpkgs.lib;
-      #   genAttrs [
-      #     "cachix"
-      #     "cloudflare"
-      #     "github"
-      #     "misc"
-      #   ] (secretFile: fromJSON (readFile .secrets/${secretFile}.json));
-
       forEachSystem = nixpkgs.lib.genAttrs [
         "aarch64-darwin"
         "aarch64-linux"
       ];
-
     in
     {
       nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem rec {
         system = "aarch64-linux";
 
         pkgs = import nixpkgs { inherit system; };
-
-        # specialArgs = {
-        #   inherit secrets;
-        # };
 
         modules = [
           ./configuration.nix
@@ -63,19 +46,20 @@
         system:
         let
           pkgs = import nixpkgs { inherit system; };
-          inherit (pkgs) mkShell writeShellScriptBin;
+          inherit (pkgs) lib mkShell writeShellScriptBin;
 
           deployScript = writeShellScriptBin "deploy" ''
-            nixos-rebuild switch --show-trace --fast \
-              --target-host "root@oc-runner" \
+            nixos-rebuild-ng switch --show-trace --fast \
+              --target-host root@oc-runner \
               --flake .#oc-runner
           '';
         in
+        with lib;
         {
           default = mkShell {
             name = "oc-runner";
             packages = with pkgs; [
-              nixos-rebuild
+              nixos-rebuild-ng
               agenix.packages.${system}.default
               deployScript
             ];
