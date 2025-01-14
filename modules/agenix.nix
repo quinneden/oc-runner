@@ -2,6 +2,7 @@
   age.identityPaths = [ "/var/keys/agenix_ssh_ed25519_key" ];
 
   age.secrets.quinn-passwd.file = ../secrets/quinn-passwd.age;
+  age.secrets.quinn-ssh-pubkey.file = ../secrets/quinn-ssh-pubkey.age;
   age.secrets.root-passwd.file = ../secrets/root-passwd.age;
   age.secrets.cachix-pat.file = ../secrets/cachix-pat.age;
   age.secrets.cloudflare-secret-access-key.file = ../secrets/cloudflare-secret-access-key.age;

@@ -12,6 +12,7 @@
     ./modules/agenix.nix
     ./modules/disk-config.nix
     ./modules/gha-runners.nix
+    ./modules/seatfiller.nix
     ./modules/zsh.nix
   ];
 
@@ -50,7 +51,7 @@
     hashedPasswordFile = config.age.secrets.quinn-passwd.path;
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII" # quinn@macmini-m4
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
     ];
   };
 
@@ -58,8 +59,14 @@
 
   services.openssh = {
     enable = true;
-    settings.PermitRootLogin = "prohibit-password";
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      PasswordAuthentication = false;
+      PubkeyAuthentication = "yes";
+    };
   };
+
+  services.seatfiller.enable = true;
 
   networking.hostName = "oc-runner";
 
@@ -72,6 +79,8 @@
     git
     git-crypt
     micro
+    stress-ng
+    supervise
     zoxide
   ];
 

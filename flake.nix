@@ -23,10 +23,12 @@
       ...
     }:
     let
-      forEachSystem = nixpkgs.lib.genAttrs [
-        "aarch64-darwin"
-        "aarch64-linux"
-      ];
+      forEachSystem =
+        f:
+        nixpkgs.lib.genAttrs [
+          "aarch64-darwin"
+          "aarch64-linux"
+        ] (system: f { pkgs = import nixpkgs { inherit system; }; });
     in
     {
       nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem rec {
@@ -43,13 +45,12 @@
       };
 
       devShells = forEachSystem (
-        system:
+        { pkgs }:
         let
-          pkgs = import nixpkgs { inherit system; };
           inherit (pkgs) lib mkShell writeShellScriptBin;
 
           deployScript = writeShellScriptBin "deploy" ''
-            nixos-rebuild-ng switch --show-trace --fast \
+            nixos-rebuild switch --show-trace --fast \
               --target-host root@oc-runner \
               --flake .#oc-runner
           '';
@@ -59,7 +60,7 @@
           default = mkShell {
             name = "oc-runner";
             packages = with pkgs; [
-              nixos-rebuild-ng
+              nixos-rebuild
               agenix.packages.${system}.default
               deployScript
             ];
@@ -67,31 +68,28 @@
         }
       );
 
-      # apps = forEachSystem (
-      #   system:
-      #   let
-      #     pkgs = nixpkgs.legacyPackages.${system};
-      #     inherit (pkgs) writeShellApplication lib;
+      apps = forEachSystem (
+        { pkgs }:
+        let
+          inherit (pkgs) writeShellApplication lib;
+        in
+        with lib;
+        rec {
+          default = deploy;
 
-      # deployScript = writeShellApplication {
-      #   name = "deploy";
-      #   runtimeInputs = [ pkgs.nixos-rebuild ];
-      #   text = ''
-      #     nixos-rebuild switch --show-trace --fast \
-      #       --target-host "root@oc-runner" \
-      #       --build-host "localhost" \
-      #       --flake .#oc-runner
-      #   '';
-      # };
-      #   in
-      #   rec {
-      #     default = deploy;
-
-      #     deploy = {
-      #       type = "app";
-      #       program = lib.getExe deployScript;
-      #     };
-      #   }
-      # );
+          deploy = {
+            type = "app";
+            program = getExe (writeShellApplication {
+              name = "deploy";
+              runtimeInputs = [ pkgs.nixos-rebuild ];
+              text = ''
+                nixos-rebuild switch --show-trace --fast \
+                  --target-host root@oc-runner \
+                  --flake .#oc-runner
+              '';
+            });
+          };
+        }
+      );
     };
 }
