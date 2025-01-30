@@ -2,3 +2,4 @@
 **/*.bak
 scripts/install.sh
 .direnv
+.keys
