@@ -81,7 +81,6 @@
     git-crypt
     micro
     stress-ng
-    supervise
     zoxide
   ];
 
