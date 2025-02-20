@@ -1,4 +1,7 @@
+{ inputs, ... }:
 {
+  imports = [ inputs.disko.nixosModules.default ];
+
   disko.devices = {
     disk = {
       main = {
@@ -44,28 +47,6 @@
                 };
               };
             };
-
-            # root = {
-            #   size = "100%";
-            #   content = {
-            #     type = "btrfs";
-            #     extraArgs = [ "-f" ]; # Override existing partition
-            #     # Subvolumes must set a mountpoint in order to be mounted,
-            #     # unless their parent is mounted
-            #     subvolumes = {
-            #       # Subvolume name is different from mountpoint
-            #       "/rootfs" = {
-            #         mountpoint = "/";
-            #       };
-            #       # Subvolume name is the same as the mountpoint
-            #       "/home" = {
-            #         mountOptions = [ "compress=zstd" ];
-            #         mountpoint = "/home";
-            #       };
-            #     };
-            #     mountpoint = "/partition-root";
-            #   };
-            # };
           };
         };
       };

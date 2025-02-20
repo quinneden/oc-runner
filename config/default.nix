@@ -8,20 +8,17 @@
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
-    ./hardware-configuration.nix
-    ./modules/agenix.nix
-    ./modules/disk-config.nix
-    ./modules/gha-runners.nix
-    ./modules/seatfiller.nix
-    ./modules/zsh.nix
+    ../modules
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_6_6;
-
-  boot.loader = {
-    efi.canTouchEfiVariables = true;
-    systemd-boot.enable = true;
-    timeout = 0;
+  boot = {
+    initrd.availableKernelModules = [ "virtio_scsi" ];
+    kernelPackages = pkgs.linuxPackages_latest;
+    loader = {
+      efi.canTouchEfiVariables = true;
+      systemd-boot.enable = true;
+      timeout = 0;
+    };
   };
 
   nix = {
@@ -69,7 +66,12 @@
 
   services.seatfiller.enable = true;
 
-  networking.hostName = "oc-runner";
+  networking = {
+    hostName = "oc-runner";
+    useDHCP = true;
+  };
+
+  nixpkgs.hostPlatform = "aarch64-linux";
 
   environment.systemPackages = with pkgs; [
     cachix

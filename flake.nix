@@ -17,11 +17,10 @@
   outputs =
     {
       agenix,
-      disko,
-      github-nix-ci,
       nixpkgs,
+      self,
       ...
-    }:
+    }@inputs:
     let
       forEachSystem =
         f:
@@ -29,66 +28,35 @@
           "aarch64-darwin"
           "aarch64-linux"
         ] (system: f { pkgs = import nixpkgs { inherit system; }; });
+
+      lib = nixpkgs.lib.extend (self: super: import ./lib { inherit (nixpkgs) lib; });
     in
     {
       nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem rec {
         system = "aarch64-linux";
-
         pkgs = import nixpkgs { inherit system; };
+        specialArgs = { inherit inputs lib; };
 
-        modules = [
-          ./configuration.nix
-          agenix.nixosModules.default
-          disko.nixosModules.default
-          github-nix-ci.nixosModules.default
-        ];
+        modules = [ ./config ];
       };
 
       devShells = forEachSystem (
         { pkgs }:
-        let
-          inherit (pkgs) lib mkShell writeShellScriptBin;
-
-          deployScript = writeShellScriptBin "deploy" ''
-            nixos-rebuild switch --show-trace --fast \
-              --target-host root@oc-runner \
-              --flake .#oc-runner
-          '';
-        in
-        with lib;
         {
-          default = mkShell {
+          default = pkgs.mkShell {
             name = "oc-runner";
-            packages = with pkgs; [
-              nixos-rebuild
-              agenix.packages.${system}.default
-              deployScript
+            packages = [
+              agenix.packages.${pkgs.system}.default
+              self.packages.${pkgs.system}.deploy
             ];
           };
         }
       );
 
-      apps = forEachSystem (
+      packages = forEachSystem (
         { pkgs }:
-        let
-          inherit (pkgs) writeShellApplication lib;
-        in
-        with lib;
-        rec {
-          default = deploy;
-
-          deploy = {
-            type = "app";
-            program = getExe (writeShellApplication {
-              name = "deploy";
-              runtimeInputs = [ pkgs.nixos-rebuild ];
-              text = ''
-                nixos-rebuild switch --show-trace --fast \
-                  --target-host root@oc-runner \
-                  --flake .#oc-runner
-              '';
-            });
-          };
+        {
+          deploy = pkgs.callPackage ./scripts/deploy.nix { inherit lib; };
         }
       );
     };
