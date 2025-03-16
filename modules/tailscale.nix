@@ -4,7 +4,7 @@
     enable = true;
     openFirewall = true;
 
-    authKeyFile = config.age.secrets.tailscale.path;
+    authKeyFile = config.sops.secrets."tailscale_auth_keys/oc-runner".path;
     authKeyParameters.preauthorized = true;
 
     extraUpFlags = [

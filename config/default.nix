@@ -1,13 +1,17 @@
 {
+  config,
+  inputs,
+  lib,
   modulesPath,
   pkgs,
-  config,
   ...
 }:
 {
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
+    inputs.lix-module.nixosModules.default
+    ./disk-config.nix
     ../modules
   ];
 
@@ -24,7 +28,7 @@
   nix = {
     nixPath = [ "nixpkgs=flake:nixpkgs" ];
     settings = {
-      access-tokens = [ "github=@${config.age.secrets.github-token.path}" ];
+      access-tokens = [ "github=@${config.sops.secrets.github_token.path}" ];
       accept-flake-config = true;
       auto-optimise-store = true;
       experimental-features = [
@@ -37,20 +41,31 @@
       extra-trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
-      trusted-users = [ "quinn" ];
+      trusted-users = [
+        "quinn"
+        "github-runner-oc-runner"
+      ];
       warn-dirty = false;
     };
   };
 
-  users.users.quinn = {
-    isNormalUser = true;
-    shell = pkgs.zsh;
-    hashedPasswordFile = config.age.secrets.quinn-passwd.path;
-    extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICF7nPf8dHNfBQqXzn18y5RsI0S7D1JxfD5dE/Xz/Wuc"
-    ];
+  users.users = {
+    quinn = {
+      isNormalUser = true;
+      shell = pkgs.zsh;
+      hashedPasswordFile = config.sops.secrets."passwords/quinn".path;
+      extraGroups = [ "wheel" ];
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
+      ];
+    };
+
+    root = {
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
+      ];
+      hashedPasswordFile = config.sops.secrets."passwords/root".path;
+    };
   };
 
   security.sudo.wheelNeedsPassword = false;
@@ -82,17 +97,10 @@
     git
     git-crypt
     micro
+    nix-fast-build
     stress-ng
     zoxide
   ];
-
-  users.users.root = {
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII" # quinn@macmini-m4
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICF7nPf8dHNfBQqXzn18y5RsI0S7D1JxfD5dE/Xz/Wuc"
-    ];
-    hashedPasswordFile = config.age.secrets.root-passwd.path;
-  };
 
   system.stateVersion = "24.05";
 }

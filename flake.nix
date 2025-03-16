@@ -1,42 +1,56 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    github-nix-ci.url = "github:juspay/github-nix-ci";
-
-    agenix = {
-      url = "github:ryantm/agenix";
+    disko = {
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    disko = {
-      url = "github:nix-community/disko";
+    github-nix-ci.url = "github:juspay/github-nix-ci";
+
+    lix = {
+      url = "https://git.lix.systems/lix-project/lix/archive/main.tar.gz";
+      flake = false;
+    };
+
+    lix-module = {
+      url = "https://git.lix.systems/lix-project/nixos-module/archive/main.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.lix.follows = "lix";
+    };
+
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    secrets = {
+      url = "git+ssh://git@github.com/quinneden/secrets.git?ref=main&shallow=1";
+      inputs = { };
+    };
+
+    sops-nix = {
+      url = "github:mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs =
     {
-      agenix,
       nixpkgs,
       self,
       ...
     }@inputs:
     let
+      lib = nixpkgs.lib.extend (self: super: import ./lib { inherit (nixpkgs) lib; });
+
       forEachSystem =
         f:
-        nixpkgs.lib.genAttrs [
+        lib.genAttrs [
           "aarch64-darwin"
           "aarch64-linux"
         ] (system: f { pkgs = import nixpkgs { inherit system; }; });
-
-      lib = nixpkgs.lib.extend (self: super: import ./lib { inherit (nixpkgs) lib; });
     in
     {
-      nixosConfigurations.oc-runner = nixpkgs.lib.nixosSystem rec {
+      nixosConfigurations.oc-runner = lib.nixosSystem {
         system = "aarch64-linux";
-        pkgs = import nixpkgs { inherit system; };
         specialArgs = { inherit inputs lib; };
-
         modules = [ ./config ];
       };
 
@@ -45,10 +59,7 @@
         {
           default = pkgs.mkShell {
             name = "oc-runner";
-            packages = [
-              agenix.packages.${pkgs.system}.default
-              self.packages.${pkgs.system}.deploy
-            ];
+            packages = [ self.packages.${pkgs.system}.deploy ];
           };
         }
       );
@@ -56,7 +67,12 @@
       packages = forEachSystem (
         { pkgs }:
         {
-          deploy = pkgs.callPackage ./scripts/deploy.nix { inherit lib; };
+          deploy = pkgs.writeShellScriptBin "deploy" ''
+            ${lib.getExe pkgs.nixos-rebuild-ng} switch \
+              --show-trace --fast \
+              --target-host root@oc-runner \
+              --flake .#oc-runner
+          '';
         }
       );
     };
