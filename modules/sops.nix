@@ -20,7 +20,7 @@ in
 
     secrets = {
       github_token = { };
-      "github/2025-05-02_oc-runner_ci-flake-lock" = {
+      "fine_grained/2025-05-02_oc-runner_ci-flake-lock" = {
         sopsFile = "${secretsPath}/github.yaml";
       };
       "tailscale_auth_keys/oc-runner" = { };

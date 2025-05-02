@@ -95,12 +95,10 @@
     fzf
     gh
     git
-    git-crypt
     micro
-    nix-fast-build
     stress-ng
     zoxide
   ];
 
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
 }

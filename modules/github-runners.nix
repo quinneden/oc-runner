@@ -12,15 +12,15 @@
       url = "https://github.com/quinneden/nixos-asahi-package";
     };
 
-    oc-runner2 = {
-      enable = false;
-      extraLabels = [ "oc-runner2" ];
-      extraPackages = [ ];
-      name = "oc-runner2";
-      noDefaultLabels = true;
-      replace = true;
-      tokenFile = config.sops.secrets."github/2025-05-02_oc-runner_ci-flake-lock".path;
-      url = "https://github.com/quinneden/oc-runner";
-    };
+    # oc-runner2 = {
+    #   enable = true;
+    #   extraLabels = [ "oc-runner2" ];
+    #   extraPackages = [ ];
+    #   name = "oc-runner2";
+    #   noDefaultLabels = true;
+    #   replace = true;
+    #   tokenFile = config.sops.secrets."fine_grained/2025-05-02_oc-runner_ci-flake-lock".path;
+    #   url = "https://github.com/quinneden/oc-runner";
+    # };
   };
 }
