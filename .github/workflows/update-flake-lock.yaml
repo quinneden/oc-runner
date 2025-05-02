@@ -18,3 +18,4 @@ jobs:
         uses: DeterminateSystems/update-flake-lock@main
         with:
           token: ${{ secrets.GH_TOKEN_UPDATE_FLAKE_LOCK }}
+          inputs: disko lix-module nixpkgs sops-nix
