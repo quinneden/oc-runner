@@ -1,7 +1,14 @@
-{ lib, pkgs, ... }:
-pkgs.writeShellScriptBin "deploy" ''
-  ${lib.getExe pkgs.nixos-rebuild} switch \
-    --show-trace --fast \
-    --target-host root@oc-runner \
-    --flake .#oc-runner
-''
+{ nixos-rebuild-ng, writeShellApplication, ... }:
+
+writeShellApplication {
+  name = "deploy-oc-runner";
+  runtimeInputs = [ nixos-rebuild-ng ];
+  text = ''
+    nixos-rebuild-ng switch \
+      --flake .#oc-runner \
+      --no-reexec \
+      --show-trace \
+      --target-host quinn@oc-runner \
+      --sudo
+  '';
+}

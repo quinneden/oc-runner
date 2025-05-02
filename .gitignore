@@ -1,5 +1,4 @@
 .DS_Store
-**/*.bak
 scripts/install.sh
 .direnv
-.keys
+result

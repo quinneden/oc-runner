@@ -1,24 +1,16 @@
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    github-nix-ci.url = "github:juspay/github-nix-ci";
-
-    lix = {
-      url = "https://git.lix.systems/lix-project/lix/archive/main.tar.gz";
-      flake = false;
-    };
-
     lix-module = {
-      url = "https://git.lix.systems/lix-project/nixos-module/archive/main.tar.gz";
+      url = "https://git.lix.systems/lix-project/nixos-module/archive/2.92.0-3.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.lix.follows = "lix";
     };
-
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     secrets = {
       url = "git+ssh://git@github.com/quinneden/secrets.git?ref=main&shallow=1";
@@ -32,11 +24,7 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      self,
-      ...
-    }@inputs:
+    { nixpkgs, self, ... }@inputs:
     let
       lib = nixpkgs.lib.extend (self: super: import ./lib { inherit (nixpkgs) lib; });
 
@@ -51,8 +39,16 @@
       nixosConfigurations.oc-runner = lib.nixosSystem {
         system = "aarch64-linux";
         specialArgs = { inherit inputs lib; };
-        modules = [ ./config ];
+        modules = [ ./host ];
       };
+
+      packages = forEachSystem (
+        { pkgs }:
+        rec {
+          default = deploy;
+          deploy = pkgs.callPackage ./scripts/deploy.nix { };
+        }
+      );
 
       devShells = forEachSystem (
         { pkgs }:
@@ -61,18 +57,6 @@
             name = "oc-runner";
             packages = [ self.packages.${pkgs.system}.deploy ];
           };
-        }
-      );
-
-      packages = forEachSystem (
-        { pkgs }:
-        {
-          deploy = pkgs.writeShellScriptBin "deploy" ''
-            ${lib.getExe pkgs.nixos-rebuild-ng} switch \
-              --show-trace --fast \
-              --target-host root@oc-runner \
-              --flake .#oc-runner
-          '';
         }
       );
     };

@@ -1,7 +1,6 @@
 {
   config,
   inputs,
-  lib,
   modulesPath,
   pkgs,
   ...
@@ -44,6 +43,7 @@
       trusted-users = [
         "quinn"
         "github-runner-oc-runner"
+        "github-runner-oc-runner2"
       ];
       warn-dirty = false;
     };

@@ -10,7 +10,7 @@ in
 with lib;
 {
   options.services.seatfiller = {
-    enable = mkEnableOption "A service that uses cpu and memory so oracle can't reclaim the instance.";
+    enable = mkEnableOption "A service that uses cpu and memory so Oracle can't reclaim a VM instance.";
   };
 
   config = mkIf cfg.enable {
