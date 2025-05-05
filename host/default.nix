@@ -42,8 +42,7 @@
       ];
       trusted-users = [
         "quinn"
-        "github-runner-oc-runner"
-        "github-runner-oc-runner2"
+        "@github-runners"
       ];
       warn-dirty = false;
     };
