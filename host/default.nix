@@ -72,6 +72,7 @@
     root = {
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICF7nPf8dHNfBQqXzn18y5RsI0S7D1JxfD5dE/Xz/Wuc"
       ];
       hashedPasswordFile = config.sops.secrets."passwords/root".path;
     };
