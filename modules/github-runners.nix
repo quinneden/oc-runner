@@ -1,30 +1,36 @@
 { config, pkgs, ... }:
-{
-  services.github-runners = {
-    oc-runner = {
-      enable = true;
-      ephemeral = true;
-      extraLabels = [ "oc-runner" ];
-      extraPackages = [ pkgs.cachix ];
+let
+  mkRunner =
+    {
+      enable ? true,
+      extraLabels ? [ "oc-runner${idx}" ],
+      extraPackages ? [ ],
+      idx,
+      repo,
+    }:
+    {
+      inherit enable extraLabels extraPackages;
+      name = "oc-runner${idx}";
+      user = "github-runner-${idx}";
       group = "github-runners";
-      name = "oc-runner";
+      ephemeral = true;
       noDefaultLabels = true;
       replace = true;
       tokenFile = config.sops.secrets.github_token.path;
-      url = "https://github.com/quinneden/nixos-asahi-package";
-      user = "github-runner-1";
+      url = "https://github.com/quinneden/${repo}";
     };
-
-    # oc-runner2 = {
-    #   enable = true;
-    #   extraLabels = [ "oc-runner2" ];
-    #   extraPackages = [ ];
-    #   name = "oc-runner2";
-    #   noDefaultLabels = true;
-    #   replace = true;
-    #   tokenFile = config.sops.secrets."fine_grained/2025-05-02_oc-runner_ci-flake-lock".path;
-    #   url = "https://github.com/quinneden/oc-runner";
-    # };
+in
+{
+  services.github-runners = {
+    oc-runner = mkRunner {
+      idx = "1";
+      extraLabels = [ "oc-runner" ];
+      extraPackages = with pkgs; [
+        cachix
+        nix-fast-build
+      ];
+      repo = "nixos-asahi-package";
+    };
   };
 
   users.groups.github-runners = { };

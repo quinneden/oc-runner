@@ -34,9 +34,7 @@
         "nix-command"
         "flakes"
       ];
-      extra-substituters = [
-        "https://nix-community.cachix.org"
-      ];
+      extra-substituters = [ "https://nix-community.cachix.org" ];
       extra-trusted-public-keys = [
         "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       ];
@@ -48,6 +46,17 @@
     };
   };
 
+  nixpkgs = {
+    hostPlatform = "aarch64-linux";
+    overlays = [
+      (final: prev: {
+        nix-fast-build = inputs.nix-fast-build.packages.${prev.system}.nix-fast-build.override {
+          nix-eval-jobs = inputs.lix-module.packages.${prev.system}.nix-eval-jobs;
+        };
+      })
+    ];
+  };
+
   users.users = {
     quinn = {
       isNormalUser = true;
@@ -56,6 +65,7 @@
       extraGroups = [ "wheel" ];
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJyLtibXqcDXRQ8DzDUbVw71YA+k+L7fH7H3oPYyjFII"
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICF7nPf8dHNfBQqXzn18y5RsI0S7D1JxfD5dE/Xz/Wuc"
       ];
     };
 
@@ -85,18 +95,12 @@
     useDHCP = true;
   };
 
-  nixpkgs.hostPlatform = "aarch64-linux";
-
   environment.systemPackages = with pkgs; [
     cachix
     curl
     eza
-    fzf
-    gh
     git
     micro
-    stress-ng
-    zoxide
   ];
 
   system.stateVersion = "25.05";

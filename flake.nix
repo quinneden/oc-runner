@@ -21,19 +21,23 @@
       url = "github:mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-fast-build = {
+      url = "github:mic92/nix-fast-build";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
-    { nixpkgs, self, ... }@inputs:
+    { nixpkgs, ... }@inputs:
     let
       lib = nixpkgs.lib.extend (self: super: import ./lib { inherit (nixpkgs) lib; });
 
       forEachSystem =
         f:
-        lib.genAttrs [
-          "aarch64-darwin"
-          "aarch64-linux"
-        ] (system: f { pkgs = import nixpkgs { inherit system; }; });
+        lib.genAttrs [ "aarch64-darwin" "aarch64-linux" ] (
+          system: f { pkgs = import nixpkgs { inherit system; }; }
+        );
     in
     {
       nixosConfigurations.oc-runner = lib.nixosSystem {
@@ -47,16 +51,6 @@
         rec {
           default = deploy;
           deploy = pkgs.callPackage ./scripts/deploy.nix { };
-        }
-      );
-
-      devShells = forEachSystem (
-        { pkgs }:
-        {
-          default = pkgs.mkShell {
-            name = "oc-runner";
-            packages = [ self.packages.${pkgs.system}.deploy ];
-          };
         }
       );
     };
