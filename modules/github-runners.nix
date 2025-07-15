@@ -31,11 +31,24 @@ in
       ];
       repo = "nixos-asahi-package";
     };
+    oc-runner2 = mkRunner {
+      idx = "2";
+      extraLabels = [ "oc-runner2" ];
+      extraPackages = with pkgs; [
+        cachix
+        nix-fast-build
+      ];
+      repo = "oc-runner";
+    };
   };
 
   users.groups.github-runners = { };
   users.users = {
     github-runner-1 = {
+      isSystemUser = true;
+      group = "github-runners";
+    };
+    github-runner-2 = {
       isSystemUser = true;
       group = "github-runners";
     };
