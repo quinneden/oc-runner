@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     disko = {
       url = "github:nix-community/disko";
@@ -50,7 +50,19 @@
         { pkgs }:
         rec {
           default = deploy;
-          deploy = pkgs.callPackage ./scripts/deploy.nix { };
+          # deploy = pkgs.callPackage ./scripts/deploy.nix { };
+          deploy = pkgs.writeShellApplication {
+            name = "deploy-oc-runner";
+            runtimeInputs = [ pkgs.nixos-rebuild-ng ];
+            text = ''
+              nixos-rebuild-ng switch \
+                --build-host oc-runner \
+                --flake .#oc-runner \
+                --no-reexec \
+                --show-trace \
+                --target-host oc-runner
+            '';
+          };
         }
       );
     };
