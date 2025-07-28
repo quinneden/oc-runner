@@ -56,11 +56,10 @@
             runtimeInputs = [ pkgs.nixos-rebuild-ng ];
             text = ''
               nixos-rebuild-ng switch \
-                --build-host oc-runner \
                 --flake .#oc-runner \
                 --no-reexec \
                 --show-trace \
-                --target-host oc-runner
+                --target-host root@oc-runner
             '';
           };
         }
