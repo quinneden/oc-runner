@@ -8,7 +8,7 @@
     };
 
     lix-module = {
-      url = "https://git.lix.systems/lix-project/nixos-module/archive/2.93.2-1.tar.gz";
+      url = "https://git.lix.systems/lix-project/nixos-module/archive/2.93.3-1.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -50,18 +50,7 @@
         { pkgs }:
         rec {
           default = deploy;
-          # deploy = pkgs.callPackage ./scripts/deploy.nix { };
-          deploy = pkgs.writeShellApplication {
-            name = "deploy-oc-runner";
-            runtimeInputs = [ pkgs.nixos-rebuild-ng ];
-            text = ''
-              nixos-rebuild-ng switch \
-                --flake .#oc-runner \
-                --no-reexec \
-                --show-trace \
-                --target-host root@oc-runner
-            '';
-          };
+          deploy = pkgs.callPackage ./scripts/deploy.nix { };
         }
       );
     };

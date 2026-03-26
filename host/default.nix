@@ -1,6 +1,6 @@
 {
   config,
-  # inputs,
+  inputs,
   modulesPath,
   pkgs,
   ...
@@ -9,7 +9,7 @@
   imports = [
     (modulesPath + "/installer/scan/not-detected.nix")
     (modulesPath + "/profiles/qemu-guest.nix")
-    # inputs.lix-module.nixosModules.default
+    inputs.lix-module.nixosModules.default
     ./disk-config.nix
     ../modules
   ];
@@ -34,10 +34,6 @@
         "nix-command"
         "flakes"
       ];
-      extra-substituters = [ "https://nix-community.cachix.org" ];
-      extra-trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
       trusted-users = [
         "quinn"
         "@github-runners"
@@ -48,13 +44,13 @@
 
   nixpkgs = {
     hostPlatform = "aarch64-linux";
-    # overlays = [
-    #   (final: prev: {
-    #     nix-fast-build = inputs.nix-fast-build.packages.${prev.system}.nix-fast-build.override {
-    #       nix-eval-jobs = inputs.lix-module.packages.${prev.system}.nix-eval-jobs;
-    #     };
-    #   })
-    # ];
+    overlays = [
+      (final: prev: {
+        nix-fast-build = inputs.nix-fast-build.packages.${prev.system}.nix-fast-build.override {
+          inherit (inputs.lix-module.packages.${prev.system}) nix-eval-jobs;
+        };
+      })
+    ];
   };
 
   users.users = {
